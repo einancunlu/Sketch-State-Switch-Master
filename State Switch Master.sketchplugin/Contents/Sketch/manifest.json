@@ -1,0 +1,48 @@
+{
+	"name": "State Switch Master",
+	"description": "Define different states and switch between them like a boss.",
+    "author": "Emin Inanc Unlu",
+	"homepage": "https://github.com/einancunlu/Sketch-State-Switch-Master",
+    "version": 1.1,
+	"compatibleVersion": 3.3,
+    "identifier": "com.einancunlu.sketch-state-switch-master",
+    "commands": [
+        {
+            "handler": "switchStates",
+            "identifier": "switch-states",
+            "name": "Switch State(s)",
+			"shortcut" : "shift control s",
+            "script": "scripts.cocoascript"
+        },
+        {
+            "handler": "changeScope",
+            "identifier": "change-scope",
+            "name": "Change Scope",
+			"shortcut" : "shift control d",
+            "script": "scripts.cocoascript"
+        },
+        {
+            "handler": "setReferenceOrCreateStateLayer",
+            "identifier": "set-reference",
+            "name": "Set Reference",
+			"shortcut" : "shift control c",
+            "script": "scripts.cocoascript"
+        },
+        {
+            "handler": "setReferenceOrCreateStateLayer",
+            "identifier": "create-state-layer",
+            "name": "Create State Layer",
+			"shortcut" : "shift control v",
+            "script": "scripts.cocoascript"
+        }
+    ],
+    "menu": {
+		"title": "State Switch Master",
+        "items": [
+            "switch-states",
+			"set-reference",
+			"create-state-layer",
+			"change-scope"
+        ]
+    }
+}
