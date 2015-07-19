@@ -4,6 +4,7 @@ Define different states and switch between them like a boss.
 
 ## Tutorial and Details
 
+[Check out this Medium post.](https://medium.com/design-prototype-develop/state-switch-master-sketch-plugin-baec61c1e943)
 
 ## Installation
 
