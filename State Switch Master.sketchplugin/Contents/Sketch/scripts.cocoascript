@@ -56,30 +56,30 @@ function setReferenceOrCreateStateLayer(context) {
 		// Load saved state layer name
 		var stateLayerName = [defaults objectForKey: stateLayerNameKey]
 		if (stateLayerName != nil) {
-            
-            var layers = findLayersNamed_inContainer_filterByType(stateLayerName, selectedLayer)
-            var message = "Layer created: \"" + stateLayerName + "\""
-
-        	var layerCount = [layers count]
-        	switch (true) {
-        	case (layerCount > 1):
-        		[doc showMessage: "Multiple state layer found!"]
-        		return
-        	case (layerCount == 1):
-                // Delete existing state layer and resize selected group
-                selectedLayer.removeLayer(layers[0])
-                selectedLayer.resizeRoot(selectedLayer)
-                var message = "Layer updated: \"" + stateLayerName + "\""
-        		break
-        	}            
+			var layers = findLayersNamed_inContainer_filterByType(stateLayerName, selectedLayer)
+			var message = "Layer created: \"" + stateLayerName + "\""
+			var layerCount = [layers count]
+			
+			switch (true) {
+			case (layerCount > 1):
+				[doc showMessage: "Multiple state layer found!"]
+				return
+			case (layerCount == 1):
+               	// Delete existing state layer and resize selected group
+               	selectedLayer.removeLayer(layers[0])
+               	selectedLayer.resizeRoot(selectedLayer)
+               	var message = "Layer updated: \"" + stateLayerName + "\""
+				break
+			}      
+			
 			// Create and add the state layer into the selected group
-    		var stateLayer = selectedLayer.addLayerOfType("rectangle")
-            stateLayer.name = stateLayerName
-            [[stateLayer frame] setWidth: [[selectedLayer frame] width]]
-            [[stateLayer frame] setHeight: [[selectedLayer frame] height]]
-		    [[stateLayer frame] setX: 0]
-		    [[stateLayer frame] setY: 0]
-            [doc showMessage: message]            
+			var stateLayer = selectedLayer.addLayerOfType("rectangle")
+			stateLayer.name = stateLayerName
+			[[stateLayer frame] setWidth: [[selectedLayer frame] width]]
+			[[stateLayer frame] setHeight: [[selectedLayer frame] height]]
+			[[stateLayer frame] setX: 0]
+			[[stateLayer frame] setY: 0]
+			[doc showMessage: message]            
 		} else {
 			[doc showMessage: "No reference is set. Firstly, you need to select a layer inside of a state group and run the 'Set Reference' command."]
 		}
