@@ -195,6 +195,10 @@ function toggleStateLayer(layer) {
 			var isVisible = child.isVisible()
 			scanAllLayersToToggle(layer, layerNameToToggle, isVisible)
 		}
+		[layer setIsVisible: true]
+		var layerNameToToggle = generateLayerNameToToggle(layer)
+		scanAllLayersToToggle(layer, layerNameToToggle, true)
+		
 		if ([parent class] === MSLayerGroup && isStateGroup(parent)) {
 			return
 		} else {
