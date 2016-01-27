@@ -1,8 +1,30 @@
 
+
 //
-//  Created by Emin İnanç Ünlü on 15 April 2015.
-//  Copyright (c) 2015 Emin İnanç Ünlü. All rights reserved.
+//  Created by Emin İnanç Ünlü.
 //
+
+/* 
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 
 //--------------------------------------
@@ -10,12 +32,17 @@
 //--------------------------------------
 
 
-var doc
-var app = [NSApplication sharedApplication]
-var defaults = [NSUserDefaults standardUserDefaults]
-var kPluginDomain = "com.einancunlu.sketch-state-switch-master"
-var stateLayerNameKey = kPluginDomain + ".nameForStateLayer"
-var switchScopeKey = kPluginDomain + ".switchScope"
+var doc,
+	app = [NSApplication sharedApplication],
+	defaults = [NSUserDefaults standardUserDefaults],
+	kPluginDomain = "com.einancunlu.sketch-state-switch-master",
+	stateLayerNameKey = kPluginDomain + ".nameForStateLayer",
+	switchScopeKey = kPluginDomain + ".switchScope",
+	kLastUpdateCheckDayKey = kPluginDomain + ".lastUpdateCheckDayKey",
+	selection,
+	command,
+	scriptPath,	
+	scriptFolder
 
 
 //--------------------------------------
@@ -26,7 +53,7 @@ var switchScopeKey = kPluginDomain + ".switchScope"
 function setReferenceOrCreateStateLayer(context) {
 
 	doc = context.document
-	var selection = context.selection
+	initCommand(context)
 	
 	var selectionCount = [selection count]
 	switch (true) {
@@ -67,7 +94,11 @@ function setReferenceOrCreateStateLayer(context) {
 			case (layerCount == 1):
                	// Delete existing state layer and resize selected group
                	selectedLayer.removeLayer(layers[0])
-               	selectedLayer.resizeRoot(selectedLayer)
+				if (getSketchVersionNumber() >= 350) {
+					selectedLayer.resizeToFitChildrenWithOption(1) 
+				} else {
+					selectedLayer.resizeRoot(true) 
+				}
                	var message = "Layer updated: \"" + stateLayerName + "\""
 				break
 			}      
@@ -75,6 +106,7 @@ function setReferenceOrCreateStateLayer(context) {
 			// Create and add the state layer into the selected group
 			var stateLayer = selectedLayer.addLayerOfType("rectangle")
 			stateLayer.name = stateLayerName
+			[stateLayer setIsVisible: false]
 			[[stateLayer frame] setWidth: [[selectedLayer frame] width]]
 			[[stateLayer frame] setHeight: [[selectedLayer frame] height]]
 			[[stateLayer frame] setX: 0]
@@ -91,7 +123,7 @@ function setReferenceOrCreateStateLayer(context) {
 function switchStates(context) {
 
 	doc = context.document
-	var selection = context.selection
+	initCommand(context)
 
 	if ([selection count] == 0) {
 		[app displayDialog: "Oops, you need to select something!"]
@@ -129,6 +161,35 @@ function changeScope(context) {
 // Helper Functions
 //--------------------------------------
 
+
+function initCommand(context) {
+	
+	doc = context.document
+	command = context.command 
+	selection = context.selection
+	scriptPath = context.scriptPath
+	scriptFolder = [scriptPath stringByDeletingLastPathComponent]
+	
+	if (isTodayNewDay() && checkPluginUpdate()) {
+		app.displayDialog_withTitle("Please redownload the plugin to install the new version.", "There is a new version of the plugin!")
+	}
+}
+
+function isTodayNewDay() {
+	
+	var lastUpdateCheckDay = [defaults objectForKey: kLastUpdateCheckDayKey]
+	
+	var formatter = [[NSDateFormatter alloc] init]
+	[formatter setDateStyle: NSDateFormatterShortStyle]
+	var today = [formatter stringFromDate: [NSDate date]]
+	saveObjectToUserDefaults(today, kLastUpdateCheckDayKey)
+	
+	if (lastUpdateCheckDay) {
+		return lastUpdateCheckDay != today
+	} else {
+		return true
+	}
+}
 
 function saveObjectToUserDefaults(object, key) {
 	
@@ -283,3 +344,53 @@ var findLayersNamed_inContainer_filterByType = function (layerName, container, l
     var predicate = (typeof layerType === 'undefined' || layerType == nil) ? NSPredicate.predicateWithFormat("name == %@", layerName) : NSPredicate.predicateWithFormat("name == %@ && class == %@", layerName, layerType)
     return findLayersMatchingPredicate_inContainer_filterByType(predicate, container)
 }
+
+function checkPluginUpdate() {
+
+	var manifestFilePath = scriptFolder + "/manifest.json"
+	var manifestJSON = getJSONFromFile(manifestFilePath)
+	var isThereNewVersion = false
+	try {
+		var response = getJSONFromURL('https://github.com/einancunlu/Sketch-State-Switch-Master/raw/master/State%20Switch%20Master.sketchplugin/Contents/Sketch/manifest.json')
+		if (response && response.version) {
+			if (response.version.toString() != manifestJSON.version.toString()) {
+				isThereNewVersion = true
+			}
+		}	
+	} catch (e) {
+		log(e)
+		return false
+	}
+	return isThereNewVersion
+}
+
+function getSketchVersionNumber() {
+	
+	const version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
+	var versionNumber = version.stringByReplacingOccurrencesOfString_withString(".", "") + ""
+	while(versionNumber.length != 3) {
+		versionNumber += "0"
+	}
+	return parseInt(versionNumber)
+}
+
+
+//--------------------------------------
+// JSON
+//--------------------------------------
+
+
+function getJSONFromFile(filePath) {
+	
+	var data = [NSData dataWithContentsOfFile: filePath]
+	return [NSJSONSerialization JSONObjectWithData: data options: 0 error: nil]
+}
+
+function getJSONFromURL(url) {
+	
+	var request = [NSURLRequest requestWithURL: [NSURL URLWithString:url]],
+		response = [NSURLConnection sendSynchronousRequest: request returningResponse: nil error: nil],
+		responseObj = [NSJSONSerialization JSONObjectWithData: response options: nil error: nil]
+	return responseObj
+}
+

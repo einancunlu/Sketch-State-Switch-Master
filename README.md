@@ -1,10 +1,13 @@
 # State Switch Master
 
-Define different states and switch between them like a boss.
+Check out [my Medium post](https://medium.com/design-prototype-develop/state-switch-master-sketch-plugin-baec61c1e943) for the details.
 
-## Tutorial and Details
+# Changelog
 
-[Check out this Medium post.](https://medium.com/design-prototype-develop/state-switch-master-sketch-plugin-baec61c1e943)
+## v1.3
+- Fixed compatibility issues with Sketch 3.5.
+- Copied and pasted state layers is hidden by default now.
+- Plugin update notification is added. I'm working on another update, so you will be notified soon hopefully!
 
 ## Installation
 
@@ -19,4 +22,4 @@ Define different states and switch between them like a boss.
 
 ## Contact
 
-You can contact me on [Twitter](https://twitter.com/einancunlu).
+[Twitter](https://twitter.com/einancunlu).
